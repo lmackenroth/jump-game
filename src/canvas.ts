@@ -20,6 +20,7 @@ function project(p5: P5Lib) {
         plat.draw();
         // Move and draw the rectangle
         rect.move(p5);
+        rect.checkCollision(plat.platforms);
         rect.draw(p5);
 
         

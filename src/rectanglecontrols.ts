@@ -6,9 +6,10 @@ export class Rectangle {
     width: number;
     height: number;
     moveSpeed: number;
-    movingUp: boolean;
     movingRight: boolean;
     movingLeft: boolean;
+    velocity: number;
+    isJumping: boolean;
 
     constructor(x: number, y: number, width: number, height: number, moveSpeed: number) {
         this.x = x;
@@ -16,9 +17,10 @@ export class Rectangle {
         this.width = width;
         this.height = height;
         this.moveSpeed = moveSpeed;
-        this.movingUp = false;
         this.movingRight = false;
         this.movingLeft = false;
+        this.velocity = 0; // Vertical velocity
+        this.isJumping = false; // Track if the rectangle is in the air
     }
 
     // Draw the rectangle
@@ -28,33 +30,44 @@ export class Rectangle {
 
     // Handle movement logic
     move(p5: P5Lib) {
-        if (this.movingUp) {
-            this.y -= this.moveSpeed;
-            if (this.y <= 200) { // Stop moving up at the upper limit
-                this.movingUp = false;
-            }
-        } else if (this.y < p5.height - this.height) {
-            this.y += this.moveSpeed; // Move down if not at the bottom
+        // Apply gravity and update velocity
+        if (this.y + this.height < p5.height) {
+            this.velocity += 1; // Gravity effect
+        } else {
+            this.velocity = 0; // Reset velocity if on the ground
+            this.isJumping = false; // Allow jumping again
         }
-
+    
+        // Apply vertical movement
+        this.y += this.velocity;
+    
+        // Constrain vertical position to not go below ground level
+        this.y = p5.constrain(this.y, 0, p5.height - this.height);
+    
+        // Horizontal movement
         if (this.movingRight) {
-            this.x += this.moveSpeed / 4; // Move right
+            this.x += this.moveSpeed; // Move right
         }
-
         if (this.movingLeft) {
-            this.x -= this.moveSpeed / 4; // Move left
+            this.x -= this.moveSpeed; // Move left
         }
+    
+        // Constrain horizontal movement within canvas bounds
+        this.x = p5.constrain(this.x, 0, p5.width - this.width);
     }
-
+    
+    
     // Handle key press events
     handleKeyPress(key: string, p5: P5Lib) {
-        if ((key === 'w' && this.y >= p5.height - this.height) || (p5.keyCode === 38 && this.y >= p5.height - this.height) ) {
-            this.movingUp = true;
+        if ((key === 'w' || p5.keyCode === 38) && !this.isJumping) {
+            this.velocity = -15; // Set jump velocity
+            this.isJumping = true; // Set jumping state
+            console.log('Jump initiated');
         }
         if (key === 'd' || p5.keyCode === 39) {
             this.movingRight = true;
         }
-        if (key === 'a'|| p5.keyCode === 37) {
+        if (key === 'a' || p5.keyCode === 37) {
             this.movingLeft = true;
         }
     }
@@ -68,5 +81,33 @@ export class Rectangle {
             this.movingLeft = false;
         }
     }
-}
 
+    // Check collision with platforms
+    checkCollision(platforms: Array<{ x: number; y: number; width: number; height: number }>) {
+        for (const platform of platforms) {
+            const platformTop = platform.y;
+            const platformLeft = platform.x;
+            const platformRight = platform.x + platform.width;
+    
+            const rectBottom = this.y + this.height;
+            const rectLeft = this.x;
+            const rectRight = this.x + this.width;
+    
+            // Check for collision with the top of the platform
+            if (
+                rectBottom >= platformTop &&
+                rectBottom <= platformTop + 5 && // Allow small margin for collision
+                rectRight > platformLeft &&
+                rectLeft < platformRight &&
+                this.velocity >= 0 // Ensure it's falling, not jumping
+            ) {
+                this.velocity = 0; // Stop downward movement
+                this.y = platformTop - this.height; // Place rectangle on top of the platform
+                this.isJumping = false; // Allow jumping again
+                console.log(`Velocity: ${this.velocity}, Y Position: ${this.y}`);
+
+            }
+        }
+    }
+    
+}
