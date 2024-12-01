@@ -1,0 +1,36 @@
+{
+    "name": "birds_of_a_feather",
+    "version": "1.0.0",
+    "description": "Final project for Fall 2024",
+    "private": true,
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "build": "webpack --mode development",
+      "dev": "webpack serve --mode development",
+      "start": "webpack serve",
+      "deploy": "webpack && gh-pages -d docs/dist"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+      "@types/p5": "^1.7.6",
+      "p5": "^1.11.1"
+    },
+    "devDependencies": {
+      "@types/body-parser": "^1.19.5",
+      "@types/bonjour": "^3.5.13",
+      "@types/connect": "^3.4.38",
+      "@types/connect-history-api-fallback": "^1.5.4",
+      "css-loader": "^7.1.2",
+      "gh-pages": "^6.2.0",
+      "html-webpack-plugin": "^5.6.3",
+      "mini-css-extract-plugin": "^2.9.2",
+      "ts-loader": "^9.5.1",
+      "typescript": "^5.7.2",
+      "webpack": "^5.96.1",
+      "webpack-cli": "^5.1.4",
+      "webpack-dev-server": "^5.1.0"
+    }
+  }
+  
