@@ -6,10 +6,11 @@ export class Rectangle {
     width: number;
     height: number;
     moveSpeed: number;
+    velocityY: number;  // New property for vertical velocity
+    movingUp: boolean;
     movingRight: boolean;
     movingLeft: boolean;
-    velocity: number;
-    isJumping: boolean;
+    movingDown: boolean;
 
     constructor(x: number, y: number, width: number, height: number, moveSpeed: number) {
         this.x = x;
@@ -17,10 +18,11 @@ export class Rectangle {
         this.width = width;
         this.height = height;
         this.moveSpeed = moveSpeed;
+        this.velocityY = 0; // Start with zero vertical speed
+        this.movingUp = false;
         this.movingRight = false;
         this.movingLeft = false;
-        this.velocity = 0; // Vertical velocity
-        this.isJumping = false; // Track if the rectangle is in the air
+        this.movingDown = false;
     }
 
     // Draw the rectangle
@@ -30,43 +32,48 @@ export class Rectangle {
 
     // Handle movement logic
     move(p5: P5Lib) {
-        // Apply gravity and update velocity
-        if (this.y + this.height < p5.height) {
-            this.velocity += 1; // Gravity effect
+        // Handle vertical movement (gravity)
+        if (this.movingUp) {
+            this.velocityY = -this.moveSpeed; // Jump up
+            this.movingUp = false; // Set to false after initiating jump
         } else {
-            this.velocity = 0; // Reset velocity if on the ground
-            this.isJumping = false; // Allow jumping again
+            this.velocityY += 0.5; // Gravity effect (increase downward velocity)
         }
-    
-        // Apply vertical movement
-        this.y += this.velocity;
-    
-        // Constrain vertical position to not go below ground level
-        this.y = p5.constrain(this.y, 0, p5.height - this.height);
-    
-        // Horizontal movement
+
+        this.y += this.velocityY;
+
+        // makes sure the rectangle doesn't fall below the canvas
+        if (this.y > p5.height - this.height) {
+            this.y = p5.height - this.height;
+            this.velocityY = 0;
+            this.movingDown = false;
+        }
+        //need to put in a check that handles the other sides
+        
+
+        //  left right  movement
         if (this.movingRight) {
-            this.x += this.moveSpeed; // Move right
+            this.x += this.moveSpeed / 4; // Move right
         }
+
         if (this.movingLeft) {
-            this.x -= this.moveSpeed; // Move left
+            this.x -= this.moveSpeed / 4; // Move left
         }
-    
-        // Constrain horizontal movement within canvas bounds
-        this.x = p5.constrain(this.x, 0, p5.width - this.width);
     }
-    
-    
+
     // Handle key press events
     handleKeyPress(key: string, p5: P5Lib) {
-        if ((key === 'w' || p5.keyCode === 38) && !this.isJumping) {
-            this.velocity = -15; // Set jump velocity
-            this.isJumping = true; // Set jumping state
-            console.log('Jump initiated');
+        //move up if w or up arrow pressed and height is checked
+        //i need to update the height chack to be able to keep jumping
+
+        if ((key === 'w' && this.y >= p5.height - this.height) || (p5.keyCode === 38 && this.y >= p5.height - this.height)) {
+            this.movingUp = true;
         }
+        //move right if d or right arrow pressed
         if (key === 'd' || p5.keyCode === 39) {
             this.movingRight = true;
         }
+        //move left if a or left arrow pressed
         if (key === 'a' || p5.keyCode === 37) {
             this.movingLeft = true;
         }
@@ -74,40 +81,56 @@ export class Rectangle {
 
     // Handle key release events
     handleKeyRelease(key: string, p5: P5Lib) {
+        //don't move right if d or right arrow isn't pressed
         if (key === 'd' || p5.keyCode === 39) {
             this.movingRight = false;
         }
+        //don't move left if a or left arrow isn't pressed
         if (key === 'a' || p5.keyCode === 37) {
             this.movingLeft = false;
         }
     }
 
-    // Check collision with platforms
     checkCollision(platforms: Array<{ x: number; y: number; width: number; height: number }>) {
-        for (const platform of platforms) {
-            const platformTop = platform.y;
-            const platformLeft = platform.x;
-            const platformRight = platform.x + platform.width;
-    
-            const rectBottom = this.y + this.height;
-            const rectLeft = this.x;
-            const rectRight = this.x + this.width;
-    
-            // Check for collision with the top of the platform
-            if (
-                rectBottom >= platformTop &&
-                rectBottom <= platformTop + 5 && // Allow small margin for collision
-                rectRight > platformLeft &&
-                rectLeft < platformRight &&
-                this.velocity >= 0 // Ensure it's falling, not jumping
-            ) {
-                this.velocity = 0; // Stop downward movement
-                this.y = platformTop - this.height; // Place rectangle on top of the platform
-                this.isJumping = false; // Allow jumping again
-                console.log(`Velocity: ${this.velocity}, Y Position: ${this.y}`);
+        let onPlatform = false;
 
+        for (const platform of platforms) {
+            //top of platform
+            const platformTop = platform.y;
+            //const platformBottom = platform.y + platform.height;
+            //left side platform
+            const platformLeft = platform.x;
+            //right side of platform
+            const platformRight = platform.x + platform.width;
+
+            //const rectTop = this.y;
+            //bottom of character
+            const rectBottom = this.y + this.height;
+            //left of character
+            const rectLeft = this.x;
+            //right of character
+            const rectRight = this.x + this.width;
+
+            // **1. Landing on top of the platform**
+            if (
+                rectBottom >= platformTop && // check collision of bottom of characgter and top of platform
+                rectBottom <= platformTop + 5 && // margin of error for landing
+                rectRight > platformLeft && // collision left platform side and right character side
+                rectLeft < platformRight && // collision right platform side and left character side
+                this.velocityY >= 0 // Only handle if falling down
+            ) {
+                this.y = platformTop - this.height; // Snap to platform's top
+                this.velocityY = 0; // makes sure it stops moving
+                onPlatform = true;
+                break; // Stop further checks
             }
         }
+
+        // If not on a platform, character can fall
+        if (!onPlatform) {
+            this.movingDown = true;
+        } else {
+            this.movingDown = false;
+        }
     }
-    
 }

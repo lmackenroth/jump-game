@@ -12,7 +12,9 @@ function project(p5: P5Lib) {
         rect = new Rectangle(p5.width / 2 - 25, p5.height - 50, 50, 50, 10);
         plat = new platform(p5);
         plat.createPlatfroms(5);
+        console.log("Platforms created:", plat.platforms);
     };
+    
 
     p5.draw = () => {
         p5.background(20, 70, 100); // Clear canvas every frame
