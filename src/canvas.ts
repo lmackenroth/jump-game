@@ -16,11 +16,11 @@ function project(p5: P5Lib) {
     // Preload assets before the setup begins
     p5.preload = () => {
         // Load GIFs for animations
-        leftIdle = p5.loadImage('gifs/leftIdle.gif');
-        rightIdle = p5.loadImage('gifs/rightIdle.gif');
-        leftMove = p5.loadImage('gifs/runLeft.gif');
-        rightMove = p5.loadImage('gifs/runRight.gif');
-        roomImage = p5.loadImage('gifs/room1.png');
+        leftIdle = p5.loadImage('./gifs/leftIdle.gif');
+        rightIdle = p5.loadImage('./gifs/rightIdle.gif');
+        leftMove = p5.loadImage('./gifs/runLeft.gif');
+        rightMove = p5.loadImage('./gifs/runRight.gif');
+        roomImage = p5.loadImage('./gifs/room1.png');
 
     };
 
