@@ -19,7 +19,7 @@ function project(p5: P5Lib) {
         rightIdle = p5.loadImage('./docs/dist/gifs/rightIdle.gif');
         leftMove = p5.loadImage('./docs/dist/gifs/runLeft.gif');
         rightMove = p5.loadImage('./docs/dist/gifs/runRight.gif');
-        roomImage = p5.loadImage('./docs/dist/gifs/room.png');
+        roomImage = p5.loadImage('./docs/dist/gifs/room1.png');
     };
     
 
