@@ -9,7 +9,7 @@ function project(p5: P5Lib) {
 
     p5.setup = () => {
         p5.createCanvas(500, 500);
-        rect = new Rectangle(p5.width / 2 - 25, p5.height - 50, 50, 50, 10);
+        rect = new Rectangle(p5,p5.width / 2 - 25, p5.height - 50, 50, 50, 10);
         plat = new platform(p5);
         plat.createPlatfroms(5);
         console.log("Platforms created:", plat.platforms);

@@ -1,6 +1,7 @@
 import P5Lib from 'p5';
 
 export class Rectangle {
+    p5: P5Lib;
     x: number;
     y: number;
     width: number;
@@ -11,9 +12,10 @@ export class Rectangle {
     movingRight: boolean;
     movingLeft: boolean;
     movingDown: boolean;
-
-    constructor(x: number, y: number, width: number, height: number, moveSpeed: number) {
+    isOnPlat: boolean;
+    constructor(p5: P5Lib,x: number, y: number, width: number, height: number, moveSpeed: number) {
         this.x = x;
+        this.p5 = p5;
         this.y = y;
         this.width = width;
         this.height = height;
@@ -23,6 +25,7 @@ export class Rectangle {
         this.movingRight = false;
         this.movingLeft = false;
         this.movingDown = false;
+        this.isOnPlat = false;
     }
 
     // Draw the rectangle
@@ -33,9 +36,10 @@ export class Rectangle {
     // Handle movement logic
     move(p5: P5Lib) {
         // Handle vertical movement (gravity)
-        if (this.movingUp) {
+        if (this.movingUp && this.isOnPlat) {
             this.velocityY = -this.moveSpeed; // Jump up
             this.movingUp = false; // Set to false after initiating jump
+            this.isOnPlat = false;
         } else {
             this.velocityY += 0.5; // Gravity effect (increase downward velocity)
         }
@@ -47,6 +51,7 @@ export class Rectangle {
             this.y = p5.height - this.height;
             this.velocityY = 0;
             this.movingDown = false;
+            this.isOnPlat = true;
         }
         //need to put in a check that handles the other sides
         
@@ -66,7 +71,8 @@ export class Rectangle {
         //move up if w or up arrow pressed and height is checked
         //i need to update the height chack to be able to keep jumping
 
-        if ((key === 'w' && this.y >= p5.height - this.height) || (p5.keyCode === 38 && this.y >= p5.height - this.height)) {
+       if ((key === 'w' && (this.isOnPlat || this.y >= p5.height - this.height)) || 
+            (p5.keyCode === 38 && (this.isOnPlat || this.y >= p5.height - this.height))) {
             this.movingUp = true;
         }
         //move right if d or right arrow pressed
@@ -126,8 +132,10 @@ export class Rectangle {
             }
         }
 
-        // If not on a platform, character can fall
-        if (!onPlatform) {
+
+        this.isOnPlat = onPlatform || this.y >= this.p5.height - this.height;
+        // If not on any platform and not touching the bottom, allow falling
+        if (!onPlatform && this.y < this.p5.height - this.height) {
             this.movingDown = true;
         } else {
             this.movingDown = false;
