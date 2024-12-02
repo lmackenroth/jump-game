@@ -64,9 +64,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   Rectangle: () => (/* binding */ Rectangle)
 /* harmony export */ });
 class Rectangle {
-    constructor(p5, x, y, width, height, moveSpeed) {
-        this.x = x;
+    constructor(p5, x, y, width, height, moveSpeed, leftIdle, rightIdle, leftMove, rightMove) {
         this.p5 = p5;
+        this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
@@ -77,11 +77,45 @@ class Rectangle {
         this.movingLeft = false;
         this.movingDown = false;
         this.isOnPlat = false;
+        this.transparency = 0;
+        this.currentAnimation = 'idleRight';
+        this.leftIdle = leftIdle;
+        this.rightIdle = rightIdle;
+        this.leftMove = leftMove;
+        this.rightMove = rightMove;
     }
-    draw(p5) {
-        p5.rect(this.x, this.y, this.width, this.height);
+    draw() {
+        if (this.p5) {
+            this.p5.fill(255, 255, 255, this.transparency);
+            this.p5.stroke(255, 255, 255, this.transparency);
+            this.p5.rect(this.x, this.y, this.width, this.height);
+            this.drawAnimation();
+        }
     }
-    move(p5) {
+    drawAnimation() {
+        let animationGif = null;
+        switch (this.currentAnimation) {
+            case 'moveRight':
+                animationGif = this.rightMove;
+                break;
+            case 'moveLeft':
+                animationGif = this.leftMove;
+                break;
+            case 'idleLeft':
+                animationGif = this.leftIdle;
+                break;
+            case 'idleRight':
+                animationGif = this.rightIdle;
+                break;
+            default:
+                animationGif = this.rightIdle;
+                break;
+        }
+        if (animationGif) {
+            this.p5.image(animationGif, this.x, this.y, this.width, this.height);
+        }
+    }
+    move() {
         if (this.movingUp && this.isOnPlat) {
             this.velocityY = -this.moveSpeed;
             this.movingUp = false;
@@ -91,37 +125,46 @@ class Rectangle {
             this.velocityY += 0.5;
         }
         this.y += this.velocityY;
-        if (this.y > p5.height - this.height) {
-            this.y = p5.height - this.height;
+        if (this.y > this.p5.height - this.height) {
+            this.y = this.p5.height - this.height;
             this.velocityY = 0;
             this.movingDown = false;
             this.isOnPlat = true;
         }
         if (this.movingRight) {
             this.x += this.moveSpeed / 4;
+            this.currentAnimation = 'moveRight';
         }
-        if (this.movingLeft) {
+        else if (this.movingLeft) {
             this.x -= this.moveSpeed / 4;
+            this.currentAnimation = 'moveLeft';
+        }
+        else if (!this.movingRight && !this.movingLeft) {
+            this.currentAnimation = this.currentAnimation.includes('Right') ? 'idleRight' : 'idleLeft';
         }
     }
-    handleKeyPress(key, p5) {
-        if ((key === 'w' && (this.isOnPlat || this.y >= p5.height - this.height)) ||
-            (p5.keyCode === 38 && (this.isOnPlat || this.y >= p5.height - this.height))) {
+    handleKeyPress(key) {
+        if ((key === 'w' && (this.isOnPlat || this.y >= this.p5.height - this.height)) ||
+            (this.p5.keyCode === 38 && (this.isOnPlat || this.y >= this.p5.height - this.height))) {
             this.movingUp = true;
         }
-        if (key === 'd' || p5.keyCode === 39) {
+        if (key === 'd' || this.p5.keyCode === 39) {
             this.movingRight = true;
+            this.currentAnimation = 'moveRight';
         }
-        if (key === 'a' || p5.keyCode === 37) {
+        if (key === 'a' || this.p5.keyCode === 37) {
             this.movingLeft = true;
+            this.currentAnimation = 'moveLeft';
         }
     }
-    handleKeyRelease(key, p5) {
-        if (key === 'd' || p5.keyCode === 39) {
+    handleKeyRelease(key) {
+        if (key === 'd' || this.p5.keyCode === 39) {
             this.movingRight = false;
+            this.currentAnimation = 'idleRight';
         }
-        if (key === 'a' || p5.keyCode === 37) {
+        if (key === 'a' || this.p5.keyCode === 37) {
             this.movingLeft = false;
+            this.currentAnimation = 'idleLeft';
         }
     }
     checkCollision(platforms) {
@@ -253,27 +296,48 @@ __webpack_require__.r(__webpack_exports__);
 
 
 function project(p5) {
-    let rect;
+    let rect = null;
     let plat;
+    let leftIdle;
+    let rightIdle;
+    let leftMove;
+    let rightMove;
+    let roomImage;
+    p5.preload = () => {
+        leftIdle = p5.loadImage('gifs/leftIdle.gif');
+        rightIdle = p5.loadImage('gifs/rightIdle.gif');
+        leftMove = p5.loadImage('gifs/runLeft.gif');
+        rightMove = p5.loadImage('gifs/runRight.gif');
+        roomImage = p5.loadImage('gifs/room1.png');
+    };
     p5.setup = () => {
-        p5.createCanvas(500, 500);
-        rect = new _rectanglecontrols__WEBPACK_IMPORTED_MODULE_1__.Rectangle(p5, p5.width / 2 - 25, p5.height - 50, 50, 50, 10);
+        p5.createCanvas(1000, 500);
+        p5.background(roomImage);
+        rect = new _rectanglecontrols__WEBPACK_IMPORTED_MODULE_1__.Rectangle(p5, p5.width / 2 - 25, p5.height - 50, 150, 150, 11, leftIdle, rightIdle, leftMove, rightMove);
         plat = new _platforms__WEBPACK_IMPORTED_MODULE_2__.platform(p5);
         plat.createPlatfroms(5);
         console.log("Platforms created:", plat.platforms);
     };
     p5.draw = () => {
-        p5.background(20, 70, 100);
+        if (rect === null) {
+            return;
+        }
+        p5.background(roomImage);
+        p5.fill(255, 255, 255);
         plat.draw();
-        rect.move(p5);
+        rect.move();
         rect.checkCollision(plat.platforms);
-        rect.draw(p5);
+        rect.draw();
     };
     p5.keyPressed = () => {
-        rect.handleKeyPress(p5.key, p5);
+        if (rect !== null) {
+            rect.handleKeyPress(p5.key);
+        }
     };
     p5.keyReleased = () => {
-        rect.handleKeyRelease(p5.key, p5);
+        if (rect !== null) {
+            rect.handleKeyRelease(p5.key);
+        }
     };
 }
 new (p5__WEBPACK_IMPORTED_MODULE_0___default())(project);
@@ -282,4 +346,4 @@ new (p5__WEBPACK_IMPORTED_MODULE_0___default())(project);
 
 /******/ })()
 ;
-//# sourceMappingURL=sketch.49e770a3.map
+//# sourceMappingURL=sketch.ce88c7bc.map

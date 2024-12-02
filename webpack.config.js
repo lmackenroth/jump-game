@@ -1,11 +1,13 @@
 const path = require('path');
+const CopyPlugin = require("copy-webpack-plugin");
+
 
 //const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
-    
+    mode: 'development', 
     entry: {
         sketch: './src/canvas.ts'
     },
@@ -30,6 +32,11 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: 'template sketch',
             inject: 'body'
+        }),
+        new CopyPlugin({
+            patterns: [
+                { from: "public", to: "" }, // Copy everything from `public` to the root of `docs/dist`
+            ],
         }),
         // new CopyPlugin({
         //     patterns: [{ from: 'src/favicon.ico', to: 'favicon.ico' }],
