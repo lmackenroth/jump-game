@@ -13,6 +13,8 @@ export class Rectangle {
     movingLeft: boolean;
     movingDown: boolean;
     isOnPlat: boolean;
+    transparency: number; // Transparency of the character
+    currentAnimation: string; // Track current animation state
     constructor(p5: P5Lib,x: number, y: number, width: number, height: number, moveSpeed: number) {
         this.x = x;
         this.p5 = p5;
@@ -26,11 +28,29 @@ export class Rectangle {
         this.movingLeft = false;
         this.movingDown = false;
         this.isOnPlat = false;
+        this.transparency = 150;
+        this.currentAnimation = 'idle';
     }
 
     // Draw the rectangle
     draw(p5: P5Lib) {
+        p5.fill(255,255,255,this.transparency);
         p5.rect(this.x, this.y, this.width, this.height);
+    }
+
+    animation(p5: P5Lib){
+
+        p5.fill(0, 0, 255, this.transparency); 
+        if (this.currentAnimation === 'idle') {
+            // idle animation
+            p5.text('Idle', this.x + this.width / 2, this.y - 10);
+        } else if (this.currentAnimation === 'moveRight') {
+            // right animation
+            p5.text('Moving Right', this.x + this.width / 2, this.y - 10);
+        } else if (this.currentAnimation === 'moveLeft') {
+            // left animation
+            p5.text('Moving Left', this.x + this.width / 2, this.y - 10);
+        }
     }
 
     // Handle movement logic
