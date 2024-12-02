@@ -33,15 +33,17 @@ class platform {
         for (const platform of this.platforms) {
             this.p5.rect(platform.x, platform.y, platform.width, platform.height);
         }
+        console.log("drawing platforms");
     }
     createPlatfroms(amount) {
-        for (var i = 0; i < amount; i++) {
+        for (var i = 0; i <= amount; i++) {
             const platform = {
                 x: this.p5.random(0, this.p5.width),
                 y: this.p5.random(0, this.p5.height),
                 width: this.p5.random(40, 80),
                 height: this.p5.random(10, 30),
             };
+            console.log("creating platform");
             this.platforms.push(platform);
         }
     }
@@ -62,28 +64,38 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   Rectangle: () => (/* binding */ Rectangle)
 /* harmony export */ });
 class Rectangle {
-    constructor(x, y, width, height, moveSpeed) {
+    constructor(p5, x, y, width, height, moveSpeed) {
         this.x = x;
+        this.p5 = p5;
         this.y = y;
         this.width = width;
         this.height = height;
         this.moveSpeed = moveSpeed;
+        this.velocityY = 0;
         this.movingUp = false;
         this.movingRight = false;
         this.movingLeft = false;
+        this.movingDown = false;
+        this.isOnPlat = false;
     }
     draw(p5) {
         p5.rect(this.x, this.y, this.width, this.height);
     }
     move(p5) {
-        if (this.movingUp) {
-            this.y -= this.moveSpeed;
-            if (this.y <= 200) {
-                this.movingUp = false;
-            }
+        if (this.movingUp && this.isOnPlat) {
+            this.velocityY = -this.moveSpeed;
+            this.movingUp = false;
+            this.isOnPlat = false;
         }
-        else if (this.y < p5.height - this.height) {
-            this.y += this.moveSpeed;
+        else {
+            this.velocityY += 0.5;
+        }
+        this.y += this.velocityY;
+        if (this.y > p5.height - this.height) {
+            this.y = p5.height - this.height;
+            this.velocityY = 0;
+            this.movingDown = false;
+            this.isOnPlat = true;
         }
         if (this.movingRight) {
             this.x += this.moveSpeed / 4;
@@ -93,7 +105,8 @@ class Rectangle {
         }
     }
     handleKeyPress(key, p5) {
-        if ((key === 'w' && this.y >= p5.height - this.height) || (p5.keyCode === 38 && this.y >= p5.height - this.height)) {
+        if ((key === 'w' && (this.isOnPlat || this.y >= p5.height - this.height)) ||
+            (p5.keyCode === 38 && (this.isOnPlat || this.y >= p5.height - this.height))) {
             this.movingUp = true;
         }
         if (key === 'd' || p5.keyCode === 39) {
@@ -109,6 +122,34 @@ class Rectangle {
         }
         if (key === 'a' || p5.keyCode === 37) {
             this.movingLeft = false;
+        }
+    }
+    checkCollision(platforms) {
+        let onPlatform = false;
+        for (const platform of platforms) {
+            const platformTop = platform.y;
+            const platformLeft = platform.x;
+            const platformRight = platform.x + platform.width;
+            const rectBottom = this.y + this.height;
+            const rectLeft = this.x;
+            const rectRight = this.x + this.width;
+            if (rectBottom >= platformTop &&
+                rectBottom <= platformTop + 5 &&
+                rectRight > platformLeft &&
+                rectLeft < platformRight &&
+                this.velocityY >= 0) {
+                this.y = platformTop - this.height;
+                this.velocityY = 0;
+                onPlatform = true;
+                break;
+            }
+        }
+        this.isOnPlat = onPlatform || this.y >= this.p5.height - this.height;
+        if (!onPlatform && this.y < this.p5.height - this.height) {
+            this.movingDown = true;
+        }
+        else {
+            this.movingDown = false;
         }
     }
 }
@@ -216,14 +257,16 @@ function project(p5) {
     let plat;
     p5.setup = () => {
         p5.createCanvas(500, 500);
-        rect = new _rectanglecontrols__WEBPACK_IMPORTED_MODULE_1__.Rectangle(p5.width / 2 - 25, p5.height - 50, 50, 50, 10);
+        rect = new _rectanglecontrols__WEBPACK_IMPORTED_MODULE_1__.Rectangle(p5, p5.width / 2 - 25, p5.height - 50, 50, 50, 10);
         plat = new _platforms__WEBPACK_IMPORTED_MODULE_2__.platform(p5);
+        plat.createPlatfroms(5);
+        console.log("Platforms created:", plat.platforms);
     };
     p5.draw = () => {
         p5.background(20, 70, 100);
-        plat.createPlatfroms(5);
-        plat.draw;
+        plat.draw();
         rect.move(p5);
+        rect.checkCollision(plat.platforms);
         rect.draw(p5);
     };
     p5.keyPressed = () => {
@@ -239,4 +282,4 @@ new (p5__WEBPACK_IMPORTED_MODULE_0___default())(project);
 
 /******/ })()
 ;
-//# sourceMappingURL=sketch.75c11b6f.map
+//# sourceMappingURL=sketch.49e770a3.map
