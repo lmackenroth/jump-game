@@ -20,6 +20,7 @@ export class Rectangle {
     rightIdle: P5Lib.Image;
     leftMove: P5Lib.Image;
     rightMove: P5Lib.Image;
+    
 
     constructor(p5: P5Lib, x: number, y: number, width: number, height: number, moveSpeed: number, leftIdle: P5Lib.Image, rightIdle: P5Lib.Image, leftMove: P5Lib.Image, rightMove: P5Lib.Image) {
         this.p5 = p5;
@@ -95,7 +96,7 @@ export class Rectangle {
             this.movingUp = false;
             this.isOnPlat = false;
         } else {
-            this.velocityY += 0.5; // Gravity effect
+            this.velocityY += 5; // Gravity effect
         }
 
         this.y += this.velocityY;

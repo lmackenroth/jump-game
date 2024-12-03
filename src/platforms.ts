@@ -25,22 +25,18 @@ export class platform {
 
     }
 
-    createPlatfroms(amount: number) {
-        //fill array with a cdertain number of platforms
-
-        for (var i = 0; i <= amount; i++) {
-            //very vauge constrictions on the randomness, will have to tweak later
+    createPlatforms(amount: number, rectX: number, rectY: number, rectWidth: number, rectHeight: number) {
+        this.platforms = []; // Clear previous platforms
+    
+        for (let i = 0; i < amount; i++) {
             const platform = {
-                x: this.p5.random(0, this.p5.width), //x position
-                y: this.p5.random(0, this.p5.height), //y position
-                width: this.p5.random(40, 80), // width 
-                height: this.p5.random(10, 30), // height
-                
+                x: this.p5.random(rectX, rectX + rectWidth), // Constrain x position to the rectangle
+                y: this.p5.random(rectY, rectY + rectHeight), // Constrain y position to the rectangle
+                width: this.p5.random(40, 80), // Platform width
+                height: this.p5.random(10, 30), // Platform height
             };
-            console.log("creating platform");
-            //add to array
+            console.log("Creating platform:", platform);
             this.platforms.push(platform);
-
         }
     }
 }
